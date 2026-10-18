@@ -23,6 +23,7 @@ Los cambios meteorológicos repentinos, en particular las precipitaciones inespe
 | **Armando Solís**      | Líder de Desarrollo / Firmware         | Diseño e implementación del firmware en microcontrolador (lectura analógica/digital de sensores, gestión de eventos y estados, transmisión Wi-Fi/MQTT). |
 | **[Nombre Apellido 2]** | Desarrollador Backend & Base de Datos   | Arquitectura y desarrollo de la API REST / WebSocket, diseño del modelo de datos, persistencia de eventos y telemetría.                                    |
 | **[Nombre Apellido 3]** | Arquitectura & Documentación / Testing | Diseño de diagramas de arquitectura, pruebas de integración hardware-software, evidencias y elaboración de la justificación de paradigmas.               |
+| **[Nombre Apellido 4]** | Arquitectura & Documentación / Testing | Diseño de diagramas de arquitectura, pruebas de integración hardware-software, evidencias y elaboración de la justificación de paradigmas.               |
 
 ---
 
