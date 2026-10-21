@@ -18,25 +18,25 @@ Los cambios meteorológicos repentinos, en particular las precipitaciones inespe
 
 ## 2. Integrantes del Grupo y Responsabilidades
 
-| Integrante                    | Rol Principal                           | Responsabilidades                                                                                                                                            |
-| :---------------------------- | :-------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Armando Solís**      | Líder de Desarrollo / Firmware         | Diseño e implementación del firmware en microcontrolador (lectura analógica/digital de sensores, gestión de eventos y estados, transmisión Wi-Fi/MQTT). |
-| **[Nombre Apellido 2]** | Desarrollador Backend & Base de Datos   | Arquitectura y desarrollo de la API REST / WebSocket, diseño del modelo de datos, persistencia de eventos y telemetría.                                    |
-| **[Nombre Apellido 3]** | Arquitectura & Documentación / Testing | Diseño de diagramas de arquitectura, pruebas de integración hardware-software, evidencias y elaboración de la justificación de paradigmas.               |
-| **[Nombre Apellido 4]** | Arquitectura & Documentación / Testing | Diseño de diagramas de arquitectura, pruebas de integración hardware-software, evidencias y elaboración de la justificación de paradigmas.               |
+| Integrante                       | Rol Principal                          | Responsabilidades                                                                                                                                       |
+| :------------------------------- | :------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Alessandro Godínez Rodríguez** | Líder de Desarrollo / Firmware         | Diseño e implementación del firmware en microcontrolador (lectura analógica/digital de sensores, gestión de eventos y estados, transmisión Wi-Fi/MQTT). |
+| **[Carolina Zhou Zheng]**        | Desarrollador Backend & Base de Datos  | Arquitectura y desarrollo de la API REST / WebSocket, diseño del modelo de datos, persistencia de eventos y telemetría.                                 |
+| **[Manuel Cárdenas Sánchez]**    | Arquitectura & Documentación / Testing | Diseño de diagramas de arquitectura, pruebas de integración hardware-software, evidencias y elaboración de la justificación de paradigmas.              |
+| **[Armando Solís Villegas]**     | Arquitectura & Documentación / Testing | Diseño de diagramas de arquitectura, pruebas de integración hardware-software, evidencias y elaboración de la justificación de paradigmas.              |
 
 ---
 
 ## 3. Dispositivos y Componentes Usados
 
-| Componente                                                         | Función en el Proyecto                                          | Justificación de Selección                                                                                                                                                                                                        |
-| :----------------------------------------------------------------- | :--------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ESP32 (NodeMCU-32S / WROOM-32)**                           | Unidad central de procesamiento y conectividad (Firmware).       | Incorpora conectividad Wi-Fi (802.11 b/g/n) y Bluetooth BLE nativas, múltiples canales ADC para lecturas analógicas de precisión, soporte para RTOS (gestión concurrente de tareas) y alta eficiencia energética a bajo costo. |
-| **Sensor de Lluvia (Módulo FC-37 / YL-83)**                 | Detección de gotas y nivel de humedad superficial.              | Posee una superficie conductora niquelada resistente a la oxidación con comparador LM393 integrado, ofreciendo tanto salida digital (umbral ajustable mediante potenciómetro) como analógica (medición gradual de intensidad).  |
-| **Sensor de Temperatura y Humedad (DHT11 / DHT22 o BME280)** | Monitoreo de variables ambientales complementarias.              | Permite correlacionar la humedad relativa y temperatura ambiental con el inicio de lluvias, facilitando análisis predictivos contextuales.                                                                                         |
-| **Buzzer Activo y LEDs Indicadores**                         | Señalización local de estado y alarmas de emergencia.          | Respuesta inmediata sin latencia ante detección de lluvia crítica para alerta a usuarios en sitio.                                                                                                                                |
-| **Módulo Relé / Servomotor (Opcional)**                    | Mecanismo de mitigación física (cierre de ventana o válvula). | Permite automatizar el aislamiento físico ante lluvia (ej. simulación de compuerta o ventana cerrada).                                                                                                                            |
-| **Fuente de Alimentación / Cable Micro-USB**                | Suministro de energía estable (5V / 3.3V).                      | Alimentación constante y confiable para evitar falsos positivos por fluctuaciones de voltaje en el ADC.                                                                                                                            |
+| Componente                                                   | Función en el Proyecto                                        | Justificación de Selección                                                                                                                                                                                                     |
+| :----------------------------------------------------------- | :------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ESP32 (NodeMCU-32S / WROOM-32)**                           | Unidad central de procesamiento y conectividad (Firmware).    | Incorpora conectividad Wi-Fi (802.11 b/g/n) y Bluetooth BLE nativas, múltiples canales ADC para lecturas analógicas de precisión, soporte para RTOS (gestión concurrente de tareas) y alta eficiencia energética a bajo costo. |
+| **Sensor de Lluvia (Módulo FC-37 / YL-83)**                  | Detección de gotas y nivel de humedad superficial.            | Posee una superficie conductora niquelada resistente a la oxidación con comparador LM393 integrado, ofreciendo tanto salida digital (umbral ajustable mediante potenciómetro) como analógica (medición gradual de intensidad). |
+| **Sensor de Temperatura y Humedad (DHT11 / DHT22 o BME280)** | Monitoreo de variables ambientales complementarias.           | Permite correlacionar la humedad relativa y temperatura ambiental con el inicio de lluvias, facilitando análisis predictivos contextuales.                                                                                     |
+| **Buzzer Activo y LEDs Indicadores**                         | Señalización local de estado y alarmas de emergencia.         | Respuesta inmediata sin latencia ante detección de lluvia crítica para alerta a usuarios en sitio.                                                                                                                             |
+| **Módulo Relé / Servomotor (Opcional)**                      | Mecanismo de mitigación física (cierre de ventana o válvula). | Permite automatizar el aislamiento físico ante lluvia (ej. simulación de compuerta o ventana cerrada).                                                                                                                         |
+| **Fuente de Alimentación / Cable Micro-USB**                 | Suministro de energía estable (5V / 3.3V).                    | Alimentación constante y confiable para evitar falsos positivos por fluctuaciones de voltaje en el ADC.                                                                                                                        |
 
 ---
 
@@ -66,7 +66,7 @@ El proyecto fue diseñado integrando múltiples paradigmas de programación, apr
 - **Dónde se aplica:** Pipeline de procesamiento de datos en el backend ([`src/backend/`](src/backend/)).
 - **Uso en el código:** Uso de funciones puras, inmutabilidad y transformaciones de flujos de datos mediante funciones de orden superior (`map`, `filter`, `reduce`) para el cálculo de promedios móviles, detección de anomalías y filtros de ruido.
 
-> *Para un desglose teórico y justificación profunda, consulta:*
+> _Para un desglose teórico y justificación profunda, consulta:_
 > 🔗 [`docs/justificacion-paradigmas.md`](docs/justificacion-paradigmas.md)
 
 ---
@@ -75,14 +75,14 @@ El proyecto fue diseñado integrando múltiples paradigmas de programación, apr
 
 ### 5.1. Conexiones Físicas de Hardware (Pinout)
 
-| Componente                     | Pin del Componente | Pin del ESP32                   | Descripción                               |
-| :----------------------------- | :----------------- | :------------------------------ | :----------------------------------------- |
-| **Módulo Sensor FC-37** | VCC                | 3V3 / 5V                        | Alimentación                              |
-|                                | GND                | GND                             | Tierra común                              |
-|                                | A0 (Analógico)    | GPIO 34 (ADC1_CH6)              | Lectura analógica de intensidad de lluvia |
-|                                | D0 (Digital)       | GPIO 25                         | Detección digital de umbral               |
-| **LED Indicador Lluvia** | Ánodo (+)         | GPIO 26 (con resistencia 220Ω) | Encendido al detectar lluvia               |
-| **Buzzer**               | VCC / Señal       | GPIO 27                         | Alarma acústica                           |
+| Componente               | Pin del Componente | Pin del ESP32                  | Descripción                               |
+| :----------------------- | :----------------- | :----------------------------- | :---------------------------------------- |
+| **Módulo Sensor FC-37**  | VCC                | 3V3 / 5V                       | Alimentación                              |
+|                          | GND                | GND                            | Tierra común                              |
+|                          | A0 (Analógico)     | GPIO 34 (ADC1_CH6)             | Lectura analógica de intensidad de lluvia |
+|                          | D0 (Digital)       | GPIO 25                        | Detección digital de umbral               |
+| **LED Indicador Lluvia** | Ánodo (+)          | GPIO 26 (con resistencia 220Ω) | Encendido al detectar lluvia              |
+| **Buzzer**               | VCC / Señal        | GPIO 27                        | Alarma acústica                           |
 
 ---
 
@@ -105,7 +105,7 @@ El proyecto fue diseñado integrando múltiples paradigmas de programación, apr
    ```
 4. Compila y flashea el firmware:
    - **PlatformIO:** Clic en el botón **Upload** (o comando `pio run -t upload`).
-   - **Arduino IDE:** Selecciona la placa *ESP32 Dev Module*, el puerto COM correcto y presiona **Subir**.
+   - **Arduino IDE:** Selecciona la placa _ESP32 Dev Module_, el puerto COM correcto y presiona **Subir**.
 5. Abre el Monitor Serial a **115200 baudios** para verificar la conexión Wi-Fi y las lecturas del sensor.
 
 ---
