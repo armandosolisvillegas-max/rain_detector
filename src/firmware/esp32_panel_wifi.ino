@@ -1,37 +1,46 @@
 /*
  * Proyecto Integrador - Paradigmas de Programación
- * PARTE 2: ESP32 (WiFi + página web)
+ * PARTE 2: ESP32 (WiFi + página web + enlace con backend)
  *
  * El ESP32 recibe el estado del Arduino por comunicación serial,
- * lo muestra en una página web y envía las órdenes del usuario
- * (METER / SACAR) al Arduino.
+ * lo muestra en su panel web local, envía órdenes (METER / SACAR) al Arduino
+ * y notifica en tiempo real al backend Node.js (POST /api/events)
+ * cuando detecta transiciones en el estado de la lluvia.
  *
  * Paradigma principal: Programación Orientada a Objetos (POO)
- *   - Clases: ConexionWiFi, EnlaceArduino, PanelWeb.
+ *   - Clases: ConexionWiFi, ClienteBackend, EnlaceArduino, PanelWeb.
  *
  * Paradigma complementario: Programación dirigida por eventos
- *   - Eventos: llega un mensaje del Arduino, el usuario presiona un botón.
+ *   - Eventos: llega mensaje del Arduino, cambio en estado de lluvia,
+ *              orden del usuario en el panel web.
  *
  * Conexiones (ESP32 DevKit):
  *   RX2 (GPIO16) <- divisor de voltaje <- pin 11 del Arduino
  *   TX2 (GPIO17) -> pin 10 del Arduino
  *   GND <-> GND del Arduino
  *
- * No necesita librerías extra: WiFi.h y WebServer.h vienen con el paquete esp32.
+ * Librerías (incluidas en el paquete de placas ESP32 para Arduino IDE / PlatformIO):
+ *   WiFi.h, WebServer.h, HTTPClient.h
  */
 
 #include <WiFi.h>
 #include <WebServer.h>
+#include <HTTPClient.h>
 
 // ============================================================
-// Configuración (cambiar aquí)
+// Configuración de Red y Backend (personalizar aquí)
 // ============================================================
-// IMPORTANTE: el ESP32 solo se conecta a redes de 2.4 GHz.
-// Si "SOTO-5G" es de 5 GHz, cambiar por la red de 2.4 GHz del router
-// (por ejemplo "SOTO" o "SOTO-2.4G") o por el hotspot de un celular.
-// Antes de subir a GitHub, reemplazar la clave por "TU_CLAVE".
-const char* WIFI_NOMBRE = "SOTO-5G";
-const char* WIFI_CLAVE  = "delunoalnueve";
+// IMPORTANTE: El ESP32 solo se conecta a redes de 2.4 GHz.
+// Reemplaza "TU_RED_WIFI" y "TU_CONTRASENA" por los datos de tu red local:
+const char* WIFI_NOMBRE = "TU_RED_WIFI";
+const char* WIFI_CLAVE  = "TU_CONTRASENA";
+
+// Dirección IP local de la computadora donde se ejecuta el backend Node.js
+// Ejemplo: "http://192.168.1.50:3000/api/events"
+// Para consultar tu IP en Windows: abre PowerShell o CMD y escribe "ipconfig"
+// (Busca la línea "Dirección IPv4" de tu adaptador Wi-Fi activo).
+// NUNCA uses "localhost" aquí, ya que dentro del ESP32 se referiría a sí mismo.
+const char* URL_BACKEND = "http://TU_IP_LOCAL:3000/api/events";
 
 const int PIN_RX_ARDUINO = 16;   // RX2
 const int PIN_TX_ARDUINO = 17;   // TX2
@@ -79,6 +88,56 @@ class ConexionWiFi {
 };
 
 // ============================================================
+// Clase ClienteBackend: abstrae el envío de eventos HTTP al servidor
+// ============================================================
+class ClienteBackend {
+  private:
+    const char* url;
+
+  public:
+    ClienteBackend(const char* url) : url(url) {}
+
+    /*
+     * Precondición:  WiFi debe estar conectado.
+     * Postcondición: Envía una petición HTTP POST con formato JSON:
+     *                { "isRaining": true/false, "reading": <valor> }
+     *
+     * Autonomía: Si el servidor backend no responde o está apagado,
+     *            el método finaliza en 2 segundos máximo sin bloquear
+     *            el funcionamiento físico del servomotor ni del Arduino.
+     */
+    bool enviarEvento(bool isRaining, int reading) {
+      if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("[HTTP] No enviado al backend: WiFi desconectado.");
+        return false;
+      }
+
+      HTTPClient http;
+      http.begin(url);
+      http.setTimeout(2000); // 2 segundos máximo de timeout para evitar congelamientos
+      http.addHeader("Content-Type", "application/json");
+
+      String payload = "{\"isRaining\":" + String(isRaining ? "true" : "false") +
+                       ",\"reading\":" + String(reading) + "}";
+
+      Serial.print("[HTTP POST -> Backend]: ");
+      Serial.println(payload);
+
+      int httpResponseCode = http.POST(payload);
+
+      if (httpResponseCode > 0) {
+        Serial.printf("[HTTP] Backend respondio con codigo: %d\n", httpResponseCode);
+        http.end();
+        return (httpResponseCode == 200 || httpResponseCode == 201);
+      } else {
+        Serial.printf("[HTTP] Error al conectar con backend: %s\n", http.errorToString(httpResponseCode).c_str());
+        http.end();
+        return false;
+      }
+    }
+};
+
+// ============================================================
 // Clase EnlaceArduino: abstrae la comunicación serial con el Arduino
 // ============================================================
 class EnlaceArduino {
@@ -86,6 +145,7 @@ class EnlaceArduino {
     HardwareSerial& puerto;
     int pinRx;
     int pinTx;
+    ClienteBackend* backend;
     String buffer;
 
     // Último estado recibido
@@ -104,9 +164,33 @@ class EnlaceArduino {
       int c3 = linea.indexOf(',', c2 + 1);
       if (c1 < 0 || c2 < 0 || c3 < 0) return;   // mensaje incompleto
 
-      lectura     = linea.substring(c1 + 1, c2).toInt();
-      lluvia      = linea.substring(c2 + 1, c3).toInt() == 1;
-      ropaAdentro = linea.substring(c3 + 1).toInt() == 1;
+      int nuevaLectura = linea.substring(c1 + 1, c2).toInt();
+      bool nuevaLluvia = linea.substring(c2 + 1, c3).toInt() == 1;
+      bool nuevaRopa   = linea.substring(c3 + 1).toInt() == 1;
+
+      // --------------------------------------------------------
+      // Detección de Transición Real y Envío al Backend
+      // --------------------------------------------------------
+      // Solo enviamos petición HTTP si hay un cambio real en el estado de lluvia,
+      // evitando duplicar eventos con los reportes periódicos que envía el Arduino.
+      if (recibioAlgo) {
+        if (nuevaLluvia != lluvia) {
+          Serial.println(nuevaLluvia ? ">> DETECTADO INICIO DE LLUVIA <<" : ">> DETECTADO FIN DE LLUVIA <<");
+          if (backend != nullptr) {
+            backend->enviarEvento(nuevaLluvia, nuevaLectura);
+          }
+        }
+      } else {
+        // Al recibir la primera lectura tras encendido, si ya está lloviendo, lo reportamos
+        if (nuevaLluvia && backend != nullptr) {
+          Serial.println(">> ESTADO INICIAL: LLUVIA ACTIVA AL ENCENDER <<");
+          backend->enviarEvento(true, nuevaLectura);
+        }
+      }
+
+      lectura     = nuevaLectura;
+      lluvia      = nuevaLluvia;
+      ropaAdentro = nuevaRopa;
       recibioAlgo = true;
       ultimoMensaje = millis();
 
@@ -115,8 +199,8 @@ class EnlaceArduino {
     }
 
   public:
-    EnlaceArduino(HardwareSerial& puerto, int pinRx, int pinTx)
-      : puerto(puerto), pinRx(pinRx), pinTx(pinTx) {}
+    EnlaceArduino(HardwareSerial& puerto, int pinRx, int pinTx, ClienteBackend* backend = nullptr)
+      : puerto(puerto), pinRx(pinRx), pinTx(pinTx), backend(backend) {}
 
     void iniciar() {
       puerto.begin(9600, SERIAL_8N1, pinRx, pinTx);
@@ -155,7 +239,7 @@ class EnlaceArduino {
 };
 
 // ============================================================
-// Página web del panel
+// Página web del panel local del ESP32
 // ============================================================
 const char PAGINA_HTML[] = R"rawliteral(
 <!DOCTYPE html>
@@ -203,7 +287,7 @@ const char PAGINA_HTML[] = R"rawliteral(
 )rawliteral";
 
 // ============================================================
-// Clase PanelWeb: servidor web para ver el estado y dar órdenes
+// Clase PanelWeb: servidor web local para ver el estado y dar órdenes
 // ============================================================
 class PanelWeb {
   private:
@@ -253,9 +337,10 @@ class PanelWeb {
 // ============================================================
 // Creación de los objetos
 // ============================================================
-ConexionWiFi  wifi(WIFI_NOMBRE, WIFI_CLAVE);
-EnlaceArduino arduino(Serial2, PIN_RX_ARDUINO, PIN_TX_ARDUINO);
-PanelWeb      panel(80, arduino);
+ConexionWiFi   wifi(WIFI_NOMBRE, WIFI_CLAVE);
+ClienteBackend backend(URL_BACKEND);
+EnlaceArduino  arduino(Serial2, PIN_RX_ARDUINO, PIN_TX_ARDUINO, &backend);
+PanelWeb       panel(80, arduino);
 
 // ============================================================
 // Programa principal
@@ -265,7 +350,7 @@ void setup() {
   arduino.iniciar();
   wifi.conectar();
   panel.iniciar();
-  Serial.println("ESP32: panel WiFi iniciado");
+  Serial.println("ESP32: panel WiFi y enlace con backend iniciados");
 }
 
 void loop() {

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rain Detector — Monitoreo Inteligente de Lluvia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Patrón de lluvia sutil de fondo -->
+  <div class="rain-bg-pattern" aria-hidden="true"></div>
+
+  <div class="app-layout">
+    <!-- ENCABEZADO CON IDENTIDAD -->
+    <header class="masthead">
+      <div class="brand-group">
+        <div class="brand-icon-box">
+          <svg class="brand-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
+            <path d="M16 14v6"></path>
+            <path d="M8 14v6"></path>
+            <path d="M12 16v6"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-row">
+            <h1 class="brand-name">RAIN DETECTOR</h1>
+            <span class="brand-version">v1.0</span>
+          </div>
+          <p class="brand-tagline">Monitoreo inteligente de lluvia</p>
+        </div>
+      </div>
+
+      <div class="telemetry-bar">
+        <div class="conn-indicator" id="connectionBadge">
+          <span class="conn-pulse"></span>
+          <span class="conn-text" id="connectionText">Sincronizado</span>
+        </div>
+        <span class="poll-interval">Sondeo: 2s</span>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <!-- ESTADO ACTUAL: EL PROTAGONISTA (Composición Asimétrica) -->
+      <section class="hero-panel state-dry" id="statusCard">
+        <!-- Columna Principal / Asimétrica Izquierda -->
+        <div class="hero-primary">
+          <div class="status-microtag" id="stateBadge">
+            <span class="microtag-dot"></span>
+            <span class="microtag-label">Sin lluvia por el momento</span>
+          </div>
+
+          <div class="hero-headline-wrap">
+            <!-- Icono dinámico según estado -->
+            <div class="weather-graphic" id="weatherGraphic">
+              <!-- SVG dinámico inyectado por app.js -->
+              <svg class="weather-svg icon-dry" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="24" cy="24" r="9" stroke-width="2.5"></circle>
+                <path d="M24 4v4"></path>
+                <path d="M24 40v4"></path>
+                <path d="M4 24h4"></path>
+                <path d="M40 24h4"></path>
+                <path d="M9.8 9.8l2.8 2.8"></path>
+                <path d="M35.4 35.4l2.8 2.8"></path>
+                <path d="M9.8 38.2l2.8-2.8"></path>
+                <path d="M35.4 12.6l2.8-2.8"></path>
+              </svg>
+            </div>
+
+            <div class="hero-titles">
+              <h2 class="hero-status-title" id="statusHeadline">Sin lluvia por el momento</h2>
+              <p class="hero-status-desc" id="statusSubline">
+                La superficie del sensor se encuentra seca. El mecanismo protector del tendedero permanece en reposo.
+              </p>
+            </div>
+          </div>
+
+          <!-- Aviso de inicio de lluvia reciente (visible sólo al detectar lluvia) -->
+          <div class="detection-alert-banner" id="rainAlertBanner" style="display: none;">
+            <div class="alert-icon-mini">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+            <div class="alert-text-group">
+              <div class="alert-title-row">
+                <span class="alert-caption">AVISO DE LLUVIA RECIENTE</span>
+                <span class="alert-clock" id="alertTimeBadge">--:--:--</span>
+              </div>
+              <p class="alert-message" id="alertDescription">
+                El sensor acaba de detectar lluvia. El servomotor ha resguardado la ropa automáticamente.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna de Métricas / Instrumentación Asimétrica Derecha -->
+        <div class="hero-telemetry">
+          <div class="telemetry-box gauge-box">
+            <div class="tbox-header">
+              <span class="tbox-label">Lectura actual del sensor</span>
+              <span class="tbox-chip" id="readingChip">En umbral seco</span>
+            </div>
+            <div class="reading-display">
+              <span class="reading-num" id="sensorReadingVal">--</span>
+              <span class="reading-scale">/ 1023 ADC</span>
+            </div>
+
+            <!-- Barra medidora de intensidad analógica -->
+            <div class="meter-track" title="Nivel del sensor vs umbral">
+              <div class="meter-bar" id="meterBar" style="width: 0%;"></div>
+              <div class="meter-threshold-mark" style="left: 29.3%;" title="Umbral de activación: 300">
+                <span class="threshold-tag">300</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="telemetry-subgrid">
+            <div class="telemetry-box mini-box">
+              <span class="tbox-label">Última detección</span>
+              <span class="tbox-value-mono" id="lastUpdatedVal">--:--:--</span>
+              <span class="tbox-caption">Hora local</span>
+            </div>
+
+            <div class="telemetry-box mini-box">
+              <span class="tbox-label">Umbral de activación</span>
+              <span class="tbox-value-mono">300 ADC</span>
+              <span class="tbox-caption">Calibración fija</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HISTORIAL CON ICONOS -->
+      <section class="history-panel">
+        <div class="history-toolbar">
+          <div class="history-title-group">
+            <div class="history-icon-box">
+              <svg class="history-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div>
+              <div class="title-with-badge">
+                <h2 class="history-title">Historial de lluvias</h2>
+                <span class="records-pill" id="eventCountChip">0 eventos</span>
+              </div>
+              <p class="history-subline">Registro cronológico de episodios y transiciones de lluvia</p>
+            </div>
+          </div>
+
+          <!-- Botón de Actualizar Funcional -->
+          <button class="btn-refresh" id="btnRefresh" title="Sincronizar eventos ahora">
+            <svg class="refresh-svg" id="refreshIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"></path>
+            </svg>
+            <span>Actualizar</span>
+          </button>
+        </div>
+
+        <!-- Tabla de Eventos -->
+        <div class="table-frame">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th scope="col">Tipo de evento</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Hora</th>
+                <th scope="col" class="th-reading">Lectura sensor</th>
+              </tr>
+            </thead>
+            <tbody id="eventsTableBody">
+              <tr class="empty-row">
+                <td colspan="4">
+                  <div class="empty-notice">
+                    <svg class="empty-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M9 17h6M9 13h6M9 9h6M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10l6 6v10a2 2 0 0 1-2 2z"></path>
+                    </svg>
+                    <p class="empty-primary">No hay eventos de lluvia registrados aún</p>
+                    <p class="empty-secondary">Cuando el sensor detecte inicio o fin de lluvia, aparecerán aquí con su fecha y lectura.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- PIE DE PÁGINA TECNOLÓGICO -->
+    <footer class="app-colophon">
+      <div class="colophon-item">
+        <span class="colophon-title">Rain Detector</span>
+        <span class="colophon-sep">&bull;</span>
+        <span>Paradigmas de Programación</span>
+        <span class="colophon-sep">&bull;</span>
+        <span>Universidad Nacional (UNA)</span>
+      </div>
+      <div class="colophon-item tech-tags">
+        <span class="tech-tag">ESP32 + Arduino</span>
+        <span class="tech-tag">Express + SQLite</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
