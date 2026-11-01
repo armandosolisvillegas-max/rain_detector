@@ -1,0 +1,35 @@
+# Dependencias de Node
+node_modules/
+package-lock.json
+
+# Base de datos SQLite local
+*.db
+*.db-*
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+rain_detector.db
+
+# Variables de entorno y credenciales locales
+.env
+.env.local
+secrets.h
+**/secrets.h
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Compilación y entornos de desarrollo (Arduino / PlatformIO / VS Code)
+.pio/
+.vscode/
+*.bin
+*.hex
+*.elf
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
