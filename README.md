@@ -1,174 +1,161 @@
-# Rain Detector (Sistema Inteligente de Detección de Lluvia)
+# Rain Detector — Tendedero Automatizado IoT con Detección de Lluvia
 
-Proyecto académico desarrollado para el curso **Paradigmas de Programación** — Universidad Nacional (UNA).
+Proyecto académico desarrollado para el curso **Paradigmas de Programación** — Universidad Nacional (UNA), Ciclo II 2026.
 
 ---
 
 ## 1. Problemática que Resuelve
 
-Los cambios meteorológicos repentinos, en particular las precipitaciones inesperadas, representan un riesgo significativo en diversos contextos:
+Tender la ropa al aire libre para su secado natural es una práctica cotidiana ampliamente utilizada; sin embargo, los cambios meteorológicos repentinos y las precipitaciones inesperadas representan un inconveniente significativo cuando no hay una persona disponible en el hogar para retirarla a tiempo. Como consecuencia, las prendas terminan mojadas, requiriendo un nuevo ciclo de lavado y secado, lo que genera desperdicio de agua, energía y tiempo.
 
-- **Hogares y edificios:** Daños en interiores por ventanas o tragaluces abiertos durante tormentas imprevistas.
-- **Agricultura e invernaderos:** Exceso de humedad o inundación de cultivos sensibles, así como desperdicio de agua y energía si los sistemas de riego automático continúan activos mientras llueve.
-- **Entornos urbanos e industriales:** Falta de telemetría local oportuna para la activación preventiva de drenajes, compuertas o alertas comunitarias.
-
-**Rain Detector** resuelve esta problemática mediante un sistema IoT embebido de monitoreo continuo que detecta la presencia e intensidad de precipitaciones en tiempo real, activa mecanismos de mitigación automáticos (alertas sonoras/visuales y accionamiento de actuadores) y transmite la telemetría a una plataforma centralizada (backend) para su registro, visualización y análisis histórico.
+**Rain Detector** resuelve esta problemática mediante un prototipo IoT de **tendedero automatizado inteligente**:
+- **Detección en tiempo real:** Un sensor de lluvia (FC-37) monitorea permanentemente la presencia de agua sobre su superficie.
+- **Accionamiento mecánico inmediato:** Al detectar lluvia, un microcontrolador Arduino UNO ordena a un servomotor retraer automáticamente el tendedero hacia una posición protegida bajo techo (0°); al cesar la lluvia y secarse el sensor, el sistema lo extiende nuevamente al exterior (90°).
+- **Telemetría y supervisión web:** El sistema transmite el estado y los valores analógicos a una aplicación web con backend en Node.js y base de datos SQLite, permitiendo visualizar en un dashboard el estado ambiental en tiempo real, alertas de activación y el historial cronológico de eventos.
 
 ---
 
 ## 2. Integrantes del Grupo y Responsabilidades
 
-| Integrante                       | Rol Principal                          | Responsabilidades                                                                                                                                       |
-| :------------------------------- | :------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Alessandro Godínez Rodríguez** | Líder de Desarrollo / Firmware         | Diseño e implementación del firmware en microcontrolador (lectura analógica/digital de sensores, gestión de eventos y estados, transmisión Wi-Fi/MQTT). |
-| **[Carolina Zhou Zheng]**        | Desarrollador Backend & Base de Datos  | Arquitectura y desarrollo de la API REST / WebSocket, diseño del modelo de datos, persistencia de eventos y telemetría.                                 |
-| **[Manuel Cárdenas Sánchez]**    | Arquitectura & Documentación / Testing | Diseño de diagramas de arquitectura, pruebas de integración hardware-software, evidencias y elaboración de la justificación de paradigmas.              |
-| **[Armando Solís Villegas]**     | Arquitectura & Documentación / Testing | Diseño de diagramas de arquitectura, pruebas de integración hardware-software, evidencias y elaboración de la justificación de paradigmas.              |
+| Integrante | Rol Principal | Responsabilidades |
+| :--- | :--- | :--- |
+| **Alessandro Godínez Rodríguez** | Líder de Firmware & Hardware | Programación del firmware en Arduino UNO (`arduino_detector_lluvia.ino`), calibración de umbrales analógicos del sensor FC-37, control del servomotor e identificación de paradigmas de programación en el código. |
+| **Carolina Zhou Zheng** | Desarrolladora Web & Backend | Arquitectura del backend con Node.js y Express (`server.js`), modelo de persistencia en SQLite (`database.js`), desarrollo de la interfaz de usuario web (`app.js`, `index.html`, `styles.css`) e integración firmware-web. |
+| **Manuel Cárdenas Sánchez** | Arquitectura & Conexiones Físicas | Elaboración y revisión del diagrama de arquitectura global, verificación de conexiones físicas entre microcontroladores, facilitación de componentes y pruebas de integración. |
+| **Armando José Solís Villegas** | Configuración, Maqueta & Documentación | Configuración del entorno de desarrollo local y estructura del repositorio, elaboración de elementos a escala (ropa) para la maqueta, investigación bibliográfica y referencias en formato IEEE para el artículo del proyecto. |
 
 ---
 
 ## 3. Dispositivos y Componentes Usados
 
-| Componente                                                   | Función en el Proyecto                                        | Justificación de Selección                                                                                                                                                                                                     |
-| :----------------------------------------------------------- | :------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ESP32 (NodeMCU-32S / WROOM-32)**                           | Unidad central de procesamiento y conectividad (Firmware).    | Incorpora conectividad Wi-Fi (802.11 b/g/n) y Bluetooth BLE nativas, múltiples canales ADC para lecturas analógicas de precisión, soporte para RTOS (gestión concurrente de tareas) y alta eficiencia energética a bajo costo. |
-| **Sensor de Lluvia (Módulo FC-37 / YL-83)**                  | Detección de gotas y nivel de humedad superficial.            | Posee una superficie conductora niquelada resistente a la oxidación con comparador LM393 integrado, ofreciendo tanto salida digital (umbral ajustable mediante potenciómetro) como analógica (medición gradual de intensidad). |
-| **Sensor de Temperatura y Humedad (DHT11 / DHT22 o BME280)** | Monitoreo de variables ambientales complementarias.           | Permite correlacionar la humedad relativa y temperatura ambiental con el inicio de lluvias, facilitando análisis predictivos contextuales.                                                                                     |
-| **Buzzer Activo y LEDs Indicadores**                         | Señalización local de estado y alarmas de emergencia.         | Respuesta inmediata sin latencia ante detección de lluvia crítica para alerta a usuarios en sitio.                                                                                                                             |
-| **Módulo Relé / Servomotor (Opcional)**                      | Mecanismo de mitigación física (cierre de ventana o válvula). | Permite automatizar el aislamiento físico ante lluvia (ej. simulación de compuerta o ventana cerrada).                                                                                                                         |
-| **Fuente de Alimentación / Cable Micro-USB**                 | Suministro de energía estable (5V / 3.3V).                    | Alimentación constante y confiable para evitar falsos positivos por fluctuaciones de voltaje en el ADC.                                                                                                                        |
+| Componente | Función en el Proyecto | Justificación de Selección |
+| :--- | :--- | :--- |
+| **Arduino UNO R3** | Microcontrolador principal de adquisición y control. | Adquisición analógica estable en pin `A0` mediante su ADC de 10 bits, generación de señales PWM para el servomotor y comunicación serial con la computadora a 9600 baudios. |
+| **Sensor de Lluvia (FC-37 / YL-83)** | Detección física de gotas de agua e intensidad. | Placa sensora con pistas niqueladas conductoras que reducen su resistencia en presencia de agua, entregando una señal analógica proporcional a la humedad superficial. |
+| **Micro Servomotor SG90** | Actuador mecánico del tendedero. | Movimiento angular preciso entre 0° (ropa protegida / adentro) y 90° (ropa expuesta / afuera) con bajo consumo y facilidad de integración física a la palanca de la maqueta. |
+| **Computadora / Enlace Serial USB** | Puente de transmisión entre Arduino y Backend. | Comunicación a través de puerto serial COM3 mediante un script intermediario (`serial-bridge.js`) que envía las lecturas vía HTTP POST (`/api/events`) al backend. |
+| **ESP32 (NodeMCU-32S / WROOM-32)** | Plataforma alternativa de conectividad Wi-Fi. | Dispone de firmware (`esp32_panel_wifi.ino`) para comunicación inalámbrica y panel web local, previsto como enlace de red directo para futuras iteraciones del prototipo. |
+| **Maqueta de Vivienda con Tendedero** | Estructura física demostrativa. | Representación a escala de una vivienda con zona exterior e interior protegida, equipada con tendedero funcional y prendas en miniatura. |
 
 ---
 
 ## 4. Paradigmas de Programación Aplicados
 
-El proyecto fue diseñado integrando múltiples paradigmas de programación, aprovechando las fortalezas de cada uno en los distintos niveles de la solución:
+La solución fue desarrollada combinando múltiples paradigmas de programación según las responsabilidades de cada componente:
 
-### A. Paradigma Estructurado / Imperativo
+### A. Programación Orientada a Objetos (POO)
+- **Dónde se aplica:** En el firmware del Arduino UNO ([`src/firmware/arduino_detector_lluvia.ino`](src/firmware/arduino_detector_lluvia.ino)).
+- **Uso en el código:** Abstracción y encapsulamiento de hardware en clases modulares:
+  - `SensorLluvia`: encapsula la lectura analógica y la evaluación del umbral de agua.
+  - `Tendedero`: gestiona los ángulos del servo (90° afuera, 0° adentro) y el estado físico de la ropa.
+  - `EnlaceESP32`: abstrae el protocolo de comunicación serial de texto.
+  - `DetectorLluvia`: coordina el flujo general y las transiciones del sistema.
 
-- **Dónde se aplica:** En el firmware de bajo nivel ([`src/firmware/`](src/firmware/)).
-- **Uso en el código:** Control secuencial de pines GPIO, bucles de muestreo analógico, retardos no bloqueantes basados en temporizadores de hardware (`millis()`) y subrutinas de calibración de sensores.
-
-### B. Paradigma Concurrente / Basado en Eventos
-
-- **Dónde se aplica:** Firmware con FreeRTOS ([`src/firmware/`](src/firmware/)) y Backend asíncrono ([`src/backend/`](src/backend/)).
+### B. Programación Concurrente y Dirigida por Eventos
+- **Dónde se aplica:** En el Backend Node.js ([`src/backend/`](src/backend/)), Frontend ([`src/frontend/`](src/frontend/)) y transiciones de firmware.
 - **Uso en el código:**
-  - **Firmware:** Tareas concurrentes independientes para lectura periódica de sensores, parpadeo de LEDs y publicación de mensajes por Wi-Fi/MQTT sin interrupciones.
-  - **Backend:** Manejadores de eventos asíncronos (`async/await` o EventEmitter/WebSockets) para reaccionar inmediatamente a los paquetes de datos entrantes desde el ESP32.
+  - **Firmware:** Reacción inmediata ante eventos de cambio de estado (inicio de lluvia `isRaining: true` y cese `isRaining: false`).
+  - **Backend:** Manejo asíncrono no bloqueante de peticiones HTTP en Express para registrar eventos concurrentes de telemetría sin congelar el servidor.
+  - **Frontend:** Temporizadores periódicos y event listeners para actualizar métricas en vivo en el navegador.
 
-### C. Paradigma Orientado a Objetos (POO)
+### C. Programación Imperativa / Estructurada
+- **Dónde se aplica:** Subrutinas de lectura de pines analógicos en el microcontrolador y rutinas de inicialización de periféricos y base de datos SQLite.
 
-- **Dónde se aplica:** Modelado de entidades tanto en firmware (controladores modulares de sensores y actuadores) como en el backend ([`src/backend/`](src/backend/)).
-- **Uso en el código:** Encapsulación de lógica en clases (`RainSensor`, `NotificationService`, `TelemetryData`), separación de interfaces y abstracción de la capa de persistencia de datos.
-
-### D. Paradigma Funcional
-
-- **Dónde se aplica:** Pipeline de procesamiento de datos en el backend ([`src/backend/`](src/backend/)).
-- **Uso en el código:** Uso de funciones puras, inmutabilidad y transformaciones de flujos de datos mediante funciones de orden superior (`map`, `filter`, `reduce`) para el cálculo de promedios móviles, detección de anomalías y filtros de ruido.
-
-> _Para un desglose teórico y justificación profunda, consulta:_
-> 🔗 [`docs/justificacion-paradigmas.md`](docs/justificacion-paradigmas.md)
+### D. Programación Funcional
+- **Dónde se aplica:** Procesamiento de datos en el backend ([`src/backend/server.js`](src/backend/server.js)), filtros y mapeos para formatear históricos cronológicos y deduplicar estados repetidos.
 
 ---
 
 ## 5. Instrucciones para Ejecutar o Reproducir la Solución
 
-### 5.1. Conexiones Físicas de Hardware (Pinout)
+### 5.1. Conexiones Físicas de Hardware
 
-| Componente               | Pin del Componente | Pin del ESP32                  | Descripción                               |
-| :----------------------- | :----------------- | :----------------------------- | :---------------------------------------- |
-| **Módulo Sensor FC-37**  | VCC                | 3V3 / 5V                       | Alimentación                              |
-|                          | GND                | GND                            | Tierra común                              |
-|                          | A0 (Analógico)     | GPIO 34 (ADC1_CH6)             | Lectura analógica de intensidad de lluvia |
-|                          | D0 (Digital)       | GPIO 25                        | Detección digital de umbral               |
-| **LED Indicador Lluvia** | Ánodo (+)          | GPIO 26 (con resistencia 220Ω) | Encendido al detectar lluvia              |
-| **Buzzer**               | VCC / Señal        | GPIO 27                        | Alarma acústica                           |
-
----
-
-### 5.2. Carga del Firmware (ESP32)
-
-#### Prerrequisitos:
-
-- [Visual Studio Code](https://code.visualstudio.com/) con la extensión [PlatformIO IDE](https://platformio.org/) (recomendado) o [Arduino IDE 2.x](https://www.arduino.cc/en/software).
-- Controladores USB a UART (CP2102 o CH340 según la placa).
-
-#### Pasos:
-
-1. Conecta la placa ESP32 a tu computadora mediante un cable USB de datos.
-2. Abre la carpeta [`src/firmware/`](src/firmware/) en tu entorno de desarrollo.
-3. Configura tus credenciales de red Wi-Fi y servidor en el archivo de configuración (ej. `config.h` o `.env`):
-   ```c
-   #define WIFI_SSID "TU_RED_WIFI"
-   #define WIFI_PASSWORD "TU_CONTRASENA"
-   #define BACKEND_URL "http://IP_DE_TU_SERVIDOR:3000/api/telemetry"
-   ```
-4. Compila y flashea el firmware:
-   - **PlatformIO:** Clic en el botón **Upload** (o comando `pio run -t upload`).
-   - **Arduino IDE:** Selecciona la placa _ESP32 Dev Module_, el puerto COM correcto y presiona **Subir**.
-5. Abre el Monitor Serial a **115200 baudios** para verificar la conexión Wi-Fi y las lecturas del sensor.
+| Componente | Pin del Componente | Pin en Arduino UNO | Descripción |
+| :--- | :--- | :--- | :--- |
+| **Sensor de Lluvia FC-37** | VCC | 5V | Alimentación del módulo sensor |
+| | GND | GND | Tierra común |
+| | A0 (Analógico) | A0 | Entrada analógica (lecturas de 0 a 1023) |
+| **Micro Servomotor SG90** | Señal (Naranja/Amarillo) | Pin 9 | Señal PWM de control de ángulo |
+| | VCC (Rojo) | 5V | Alimentación del motor |
+| | GND (Café/Negro) | GND | Tierra común |
+| **Conexión Serial PC** | Puerto USB | Cable USB tipo A-B | Transmisión serial COM a 9600 baudios |
 
 ---
 
-### 5.3. Levantar el Backend
+### 5.2. Carga del Firmware en Arduino UNO
+
+1. Conecta el Arduino UNO a tu computadora mediante el cable USB.
+2. Abre el archivo [`src/firmware/arduino_detector_lluvia.ino`](src/firmware/arduino_detector_lluvia.ino) en **Arduino IDE**.
+3. En el menú **Herramientas**:
+   - Selecciona la placa: **Arduino Uno**.
+   - Selecciona el puerto serie correspondiente (ej. `COM3` en Windows).
+4. Haz clic en **Subir** (Upload).
+5. Abre el **Monitor Serie** a `9600 baudios` para verificar las lecturas analógicas (umbral de lluvia predeterminado: `300`).
+
+---
+
+### 5.3. Puesta en Marcha del Backend y Frontend
 
 #### Prerrequisitos:
-
-- [Node.js](https://nodejs.org/) (versión 18+ LTS) o [Python](https://www.python.org/) (3.10+) según la tecnología elegida.
-- Gestor de paquetes (`npm` / `pnpm` / `pip`).
+- [Node.js](https://nodejs.org/) (versión 18+ LTS recomendada).
+- Gestor de paquetes `npm`.
 
 #### Pasos:
-
-1. Navega hasta la carpeta del backend:
+1. Abre una terminal y navega a la carpeta del backend:
    ```bash
    cd src/backend
    ```
-2. Instala las dependencias del proyecto:
+2. Instala las dependencias del servidor:
    ```bash
    npm install
-   # o si utilizas Python: pip install -r requirements.txt
    ```
-3. Configura las variables de entorno creando un archivo `.env`:
-   ```env
-   PORT=3000
-   DATABASE_URL=sqlite://./rain_detector.db
-   MQTT_BROKER=mqtt://localhost:1883
-   ```
-4. Inicia el servidor de desarrollo:
+3. Inicia el servidor:
    ```bash
-   npm run dev
-   # o si utilizas Python: python main.py
+   npm start
    ```
-5. El servidor estará escuchando en `http://localhost:3000`.
+4. El servidor iniciará en el puerto `3000`:
+   - **Dashboard Web:** Abre tu navegador en [http://localhost:3000](http://localhost:3000).
+   - **API REST disponible:**
+     - `GET /api/status`: Estado actual de lluvia y última lectura.
+     - `GET /api/events`: Historial cronológico de eventos registrados en SQLite.
+     - `POST /api/events`: Endpoint para recibir lecturas del sensor (`{ "isRaining": true, "reading": 386 }`).
 
 ---
 
-## 6. Enlace al Diagrama de Arquitectura
+### 5.4. Puente Serial (Arduino USB ➔ Backend)
 
-Para consultar el diagrama detallado de componentes, flujo de comunicación entre firmware, broker/API y base de datos, visita:
+Para reenviar las lecturas emitidas por el Arduino por el puerto USB hacia el backend en tiempo real:
 
-👉 **[Documentación y Diagrama de Arquitectura](docs/arquitectura/README.md)**
+1. Asegúrate de cerrar el Monitor Serial del Arduino IDE para liberar el puerto COM.
+2. Ejecuta el puente serial en una terminal:
+   ```bash
+   node serial-bridge.js
+   ```
+   *(Lee las tramas emitidas por el Arduino en el puerto COM3 y genera solicitudes `POST http://localhost:3000/api/events` recibiendo respuestas HTTP 200).*
+
+---
+
+## 6. Diagrama de Arquitectura Global
 
 ```mermaid
-graph LR
-    subgraph Hardware ["Capa Hardware (Edge)"]
-        S[Sensor FC-37] -->|Analógico / Digital| ESP[ESP32 MCU]
-        ESP -->|Señal GPIO| BZ[Buzzer & LEDs]
-        ESP -->|Señal PWM| SV[Servomotor]
+flowchart LR
+    subgraph Hardware ["Capa Física (Maqueta & Sensores)"]
+        Sensor["Sensor de Lluvia FC-37<br/>Salida Analógica A0"] -->|Lectura ADC 0-1023| Arduino["Arduino UNO R3"]
+        Arduino -->|Señal PWM Pin 9| Servo["Servomotor SG90<br/>0°: Proteger / 90°: Tender"]
     end
 
-    subgraph Red ["Capa de Comunicación"]
-        ESP -->|HTTP REST / MQTT / WebSockets| GW[Wi-Fi Gateway / Router]
+    subgraph Enlace ["Capa de Enlace & Transmisión"]
+        Arduino -->|Cable USB / Serial 9600 baudios| COM["Puerto Serie COM3 (PC)"]
+        COM -->|Lectura serial| Bridge["Puente Serial (Node.js)"]
     end
 
-    subgraph BackendServicios ["Capa Backend & Servicios"]
-        GW --> API[Backend API Server]
-        API --> DB[(Base de Datos)]
-        API --> WS[Servicio de Notificaciones / Alertas]
+    subgraph BackendServicios ["Capa Backend & Persistencia"]
+        Bridge -->|HTTP POST /api/events| Express["Backend API Express (Node.js)"]
+        Express -->|Almacenamiento de Eventos| DB[("Base de Datos SQLite<br/>rain_detector.db")]
     end
 
-    subgraph Cliente ["Capa de Usuario"]
-        API --> UI[Dashboard Web / Monitoreo]
+    subgraph Cliente ["Capa de Presentación"]
+        Express -->|Servidor Estático / Endpoints JSON| Dashboard["Dashboard Web Interactivo<br/>(HTML5 / CSS3 / JavaScript)"]
     end
 ```
 
@@ -176,33 +163,48 @@ graph LR
 
 ## 7. Bitácoras de Trabajo Individual
 
-Cada integrante cuenta con su bitácora de seguimiento semanal en la carpeta [`bitacoras/`](bitacoras/):
+El progreso detallado, las dificultades enfrentadas y las soluciones técnicas de cada integrante se encuentran documentados en:
 
-- 📘 [Bitácora - Armando Solís](bitacoras/nombre-apellido-1/bitacora.md)
-- 📘 [Bitácora - Integrante 2](bitacoras/nombre-apellido-2/bitacora.md)
-- 📘 [Bitácora - Integrante 3](bitacoras/nombre-apellido-3/bitacora.md)
+- 📘 [Bitácora — Alessandro Godínez Rodríguez](bitacoras/Alessandro-Godinez/bitacora.md)
+- 📘 [Bitácora — Armando José Solís Villegas](bitacoras/Armando-Solis/bitacora.md)
+- 📘 [Bitácora — Carolina Zhou Zheng](bitacoras/Carolina-Zhou/bitacora.md)
+- 📘 [Bitácora — Manuel Josué Cárdenas Sánchez](bitacoras/Manuel-Cardenas/bitacora.md)
 
 ---
 
-## 📁 Estructura General del Repositorio
+## 📁 Estructura del Repositorio
 
 ```text
 rain_detector/
-├── README.md                           # Información general del proyecto
-├── src/
-│   ├── firmware/                       # Código fuente ESP32 / microcontrolador
-│   └── backend/                        # API, servicios y modelos de datos
-├── docs/
-│   ├── arquitectura/                   # Diagramas y especificación de arquitectura
-│   │   └── README.md
-│   ├── pruebas/                        # Evidencias: capturas, fotos, videos y tablas
-│   │   └── README.md
-│   └── justificacion-paradigmas.md     # Documento de justificación de paradigmas
-└── bitacoras/
-    ├── nombre-apellido-1/              # Bitácora individual integrante 1
-    │   └── bitacora.md
-    ├── nombre-apellido-2/              # Bitácora individual integrante 2
-    │   └── bitacora.md
-    └── nombre-apellido-3/              # Bitácora individual integrante 3
-        └── bitacora.md
+├── README.md                           # Descripción general y guía del proyecto
+├── bitacoras/                          # Bitácoras individuales de los integrantes
+│   ├── Alessandro-Godinez/
+│   │   └── bitacora.md
+│   ├── Armando-Solis/
+│   │   └── bitacora.md
+│   ├── Carolina-Zhou/
+│   │   └── bitacora.md
+│   └── Manuel-Cardenas/
+│       └── bitacora.md
+├── docs/                               # Documentación técnica y académica
+│   ├── arquitectura/
+│   │   └── README.md                   # Descripción de capas del sistema
+│   ├── pruebas/
+│   │   └── README.md                   # Guía y evidencias de pruebas
+│   └── justificacion-paradigmas.md     # Fundamentación teórica de paradigmas
+└── src/                                # Código fuente de la solución
+    ├── firmware/
+    │   ├── arduino_detector_lluvia.ino # Firmware Arduino (sensor, servo y POO)
+    │   ├── esp32_panel_wifi.ino        # Firmware ESP32 (panel web y conectividad Wi-Fi)
+    │   └── README.md
+    ├── backend/
+    │   ├── database.js                 # Inicialización y consultas SQLite
+    │   ├── server.js                   # API REST Express y servidor estático
+    │   ├── package.json
+    │   └── test/
+    │       └── backend.test.js         # Pruebas automatizadas del backend
+    └── frontend/
+        ├── index.html                  # Estructura del dashboard web
+        ├── styles.css                  # Estilos visuales del dashboard
+        └── app.js                      # Lógica de consumo de API y actualización
 ```
