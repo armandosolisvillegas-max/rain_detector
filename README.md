@@ -20,7 +20,7 @@ Tender la ropa al aire libre para su secado natural es una práctica cotidiana a
 | Integrante | Rol Principal | Responsabilidades |
 | :--- | :--- | :--- |
 | **Alessandro Godínez Rodríguez** | Líder de Firmware & Hardware | Programación del firmware en Arduino UNO (`arduino_detector_lluvia.ino`), calibración de umbrales analógicos del sensor FC-37, control del servomotor e identificación de paradigmas de programación en el código. |
-| **Carolina Zhou Zheng** | Desarrolladora Web & Backend | Arquitectura del backend con Node.js y Express (`server.js`), modelo de persistencia en SQLite (`database.js`), desarrollo de la interfaz de usuario web (`app.js`, `index.html`, `styles.css`) e integración firmware-web. |
+| **Carolina Zhou Zheng** | Desarrolladora Web & Backend y maqueta | Arquitectura del backend con Node.js y Express (`server.js`), modelo de persistencia en SQLite (`database.js`), desarrollo de la interfaz de usuario web (`app.js`, `index.html`, `styles.css`) e integración firmware-web. Además de la construcción de la maqueta. |
 | **Manuel Cárdenas Sánchez** | Arquitectura & Conexiones Físicas | Elaboración y revisión del diagrama de arquitectura global, verificación de conexiones físicas entre microcontroladores, facilitación de componentes y pruebas de integración. |
 | **Armando José Solís Villegas** | Configuración, Maqueta & Documentación | Configuración del entorno de desarrollo local y estructura del repositorio, elaboración de elementos a escala (ropa) para la maqueta, investigación bibliográfica y referencias en formato IEEE para el artículo del proyecto. |
 
