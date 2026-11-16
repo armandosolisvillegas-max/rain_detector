@@ -332,7 +332,8 @@ class PanelWeb {
 // ============================================================
 ConexionWiFi   wifi(WIFI_NOMBRE, WIFI_CLAVE);
 ClienteBackend backend(URL_BACKEND);
-EnlaceArduino  arduino(Serial2, PIN_RX_ARDUINO, PIN_TX_ARDUINO, &backend);
+HardwareSerial SerialESP32(2);
+EnlaceArduino arduino(SerialESP32, PIN_RX_ARDUINO, PIN_TX_ARDUINO, &backend);
 PanelWeb       panel(80, arduino);
 
 // ============================================================
