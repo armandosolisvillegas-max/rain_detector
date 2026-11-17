@@ -127,6 +127,64 @@ Durante esta semana reforcé mis conocimientos sobre el desarrollo de aplicacion
 Como siguientes pasos, queda pendiente realizar pruebas físicas del prototipo para comprobar que el sensor de lluvia detecte correctamente los cambios en las condiciones climáticas y que el ESP32 pueda transmitir esa información al backend mediante Wi-Fi. También será necesario verificar que los eventos recibidos se almacenen correctamente en SQLite y que la interfaz web muestre el estado actual y el historial de acuerdo con la información recibida. Posteriormente, se deberán realizar pruebas de integración para comprobar el funcionamiento conjunto de la maqueta, los componentes electrónicos y la aplicación web. Además, queda pendiente trabajar en el artículo del proyecto y continuar documentando los avances, las dificultades y las soluciones implementadas.
 
 ---
+****
+---
+
+## Semana 3 — 15/11/2026 a 16/11/2026
+
+### Actividades realizadas
+
+Durante esta semana participé en una reunión de trabajo con los integrantes del equipo para realizar los últimos ajustes del proyecto Rain Detector. El objetivo principal fue revisar los detalles de la maqueta, mejorar su presentación física y comprobar que los diferentes componentes estuvieran correctamente ubicados e integrados.
+
+Durante la reunión se revisó la estructura de la vivienda y la distribución de los elementos electrónicos, procurando que la representación del sistema fuera clara y que la maqueta permitiera demostrar adecuadamente el funcionamiento del tendedero automatizado.
+
+Además, se realizaron pruebas de funcionamiento para verificar la respuesta del sensor de lluvia, el movimiento del servomotor y la comunicación entre los componentes del sistema y la aplicación web. También se revisaron los detalles finales para asegurarnos de que el proyecto estuviera preparado para su presentación y demostración.
+
+### Avances
+
+Se realizaron los últimos ajustes en la maqueta física del proyecto, mejorando la organización y presentación de sus componentes. Asimismo, se revisó el funcionamiento general del prototipo y se llevaron a cabo pruebas para comprobar que el sistema respondiera correctamente ante la detección de lluvia.
+
+También se verificó el funcionamiento de la aplicación web, incluyendo la recepción de información, la visualización del estado del detector y el registro de eventos en el historial.
+
+Con estas actividades se avanzó en la finalización del proyecto, integrando los aspectos físicos y de software desarrollados durante las semanas anteriores.
+
+### Dificultades encontradas
+
+Durante la revisión final fue necesario prestar atención a pequeños detalles de la maqueta y a la correcta organización de los componentes, ya que estos aspectos podían influir tanto en la presentación como en la demostración del prototipo.
+
+También fue importante comprobar que los diferentes elementos funcionaran de manera coordinada y que la información presentada en la aplicación web correspondiera con los cambios detectados por el sistema.
+
+### Soluciones implementadas
+
+Se realizaron ajustes en la distribución y presentación de los elementos de la maqueta para mejorar su organización. Además, se revisaron las conexiones y el funcionamiento de los componentes electrónicos, efectuando pruebas para identificar posibles inconvenientes antes de la presentación final.
+
+En cuanto al software, se verificó el funcionamiento del backend y del dashboard, comprobando que la información pudiera recibirse y visualizarse correctamente.
+
+### Decisiones técnicas
+
+Se decidió enfocar esta última etapa en la revisión general del prototipo y en la corrección de los detalles pendientes, priorizando la estabilidad del funcionamiento y la presentación de la maqueta.
+
+También se consideró importante realizar pruebas de los componentes físicos y de la aplicación web para comprobar que las partes desarrolladas durante el proyecto estuvieran correctamente integradas.
+
+### Pruebas efectuadas
+
+Se realizaron pruebas físicas con el sensor de lluvia para comprobar su capacidad de detectar la presencia de agua y generar el cambio de estado correspondiente. También se verificó la respuesta del servomotor, observando su movimiento de acuerdo con las condiciones detectadas por el sensor.
+
+Adicionalmente, se revisó la comunicación con la aplicación web para comprobar la recepción de los datos, las respuestas del backend y la actualización del dashboard y del historial de eventos.
+
+Estas pruebas permitieron revisar el funcionamiento general del prototipo y realizar los últimos ajustes necesarios para su demostración.
+
+### Aprendizajes obtenidos
+
+Durante esta última semana reforcé la importancia de realizar pruebas de integración antes de considerar terminado un proyecto. Aprendí que no es suficiente con desarrollar cada componente por separado, sino que también es necesario comprobar que todos funcionen correctamente en conjunto.
+
+Asimismo, comprendí la importancia de revisar los detalles físicos de una maqueta, mantener una buena organización de los componentes y trabajar colaborativamente para resolver los últimos aspectos pendientes de un proyecto.
+
+Esta experiencia me permitió relacionar los conocimientos adquiridos durante el curso con el desarrollo de un prototipo funcional que combina programación, electrónica, automatización y desarrollo web.
+
+### Próximos pasos
+
+Al tratarse de la última semana de desarrollo, los siguientes pasos consisten en finalizar la documentación del proyecto, preparar la presentación y organizar la demostración del prototipo. También queda completar la entrega de los archivos y evidencias correspondientes.
 
 <!-- Agrega una sección nueva por cada semana siguiendo el mismo formato -->
 
