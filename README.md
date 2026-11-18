@@ -165,14 +165,14 @@ flowchart LR
 
 El progreso detallado, las dificultades enfrentadas y las soluciones técnicas de cada integrante se encuentran documentados en:
 
-- 📘 [Bitácora — Alessandro Godínez Rodríguez](bitacoras/Alessandro-Godinez/bitacora.md)
-- 📘 [Bitácora — Armando José Solís Villegas](bitacoras/Armando-Solis/bitacora.md)
-- 📘 [Bitácora — Carolina Zhou Zheng](bitacoras/Carolina-Zhou/bitacora.md)
-- 📘 [Bitácora — Manuel Josué Cárdenas Sánchez](bitacoras/Manuel-Cardenas/bitacora.md)
+-  [Bitácora — Alessandro Godínez Rodríguez](bitacoras/Alessandro-Godinez/bitacora.md)
+-  [Bitácora — Armando José Solís Villegas](bitacoras/Armando-Solis/bitacora.md)
+-  [Bitácora — Carolina Zhou Zheng](bitacoras/Carolina-Zhou/bitacora.md)
+-  [Bitácora — Manuel Josué Cárdenas Sánchez](bitacoras/Manuel-Cardenas/bitacora.md)
 
 ---
 
-## 📁 Estructura del Repositorio
+## Estructura del Repositorio
 
 ```text
 rain_detector/
